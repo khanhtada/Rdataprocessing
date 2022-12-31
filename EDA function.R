@@ -1,3 +1,4 @@
+
   library(groupdata2)
   library(psych)
   library(tidyr)
@@ -11,8 +12,7 @@
   library(ggplot2)
   #library(Microsoft365R)
   #library(blastula)
-  #I.Import data----
-  #Create connection to BQ----
+# CREATE INDICATORS METRICS----
 info_server_func <- function() {
      table_list <- as.data.frame(dbListTables(con_bq_cr))
      colnames(table_list)[1]= "TABLE_NAME"
@@ -103,51 +103,38 @@ primary_key_find <- function(table){
   }
   return(primary_key_arr)
 }
-# HISTOGRAM 
+# HISTOGRAM---- 
 data_dist_plot <- function(table)
 {
-  numeric_dim<-filter(column_info(table), type == "INTEGER")$name
-  if ( length(numeric_dim) == 0)
-  {
-   break
-   } else 
-      par(mfrow = c(floor(length(numeric_dim)/2),2))
-      for (i in 1 : length(numeric_dim))
-      { 
-        data =   as.array(dbGetQuery(con_bq_cr,paste0("select ",numeric_dim[i], " from risk_credit_data.",table," where ",numeric_dim[i]," is not null"))[[1]])
-        final_plot = hist(summary(data) , main = as.character(numeric_dim[i]) , xlab = "")
-      }
-      return(final_plot)
-}
-
-#-------------------
-
--------------FIXING
-  numeric_dim<-filter(column_info("CL_CREDIT_CARD_DICTIONARY"), type == "INTEGER")$name
+   numeric_dim<-filter(column_info(table), type == "INTEGER")$name
   if (length(numeric_dim) == 0){
-   break
+    message("There are no INTEGER dimension in table")
    } else  
-      par(mfrow = c(floor(length(numeric_dim)/2),2))
+   {
+      par(mfrow = c(ceiling(length(numeric_dim)/2),2))
       for (i in 1 : length(numeric_dim))
       { 
-        data =   as.array(dbGetQuery(con_bq_cr,paste0("select ",numeric_dim[1], " from risk_credit_data.","CL_CREDIT_CARD_DICTIONARY"," where ",numeric_dim[i]," is not null"))[[1]])
+        data =   as.array(dbGetQuery(con_bq_cr,paste0("select ",numeric_dim[1], " from risk_credit_data.",table," where ",numeric_dim[i]," is not null"))[[1]])
         final_plot = hist(summary(data) , main = as.character(numeric_dim[i]) , xlab = "")
       }
       return(final_plot)
-data_dist_plot("CL_CREDIT_CARD_DICTIONARY")
-length(numeric_dim) == 0
-#-----------------------------------
-# HISTOGRAM 
+   } 
+}
 data_box_plot <- function(table)
 {
-  numeric_dim<-filter(column_info(table), type == "INTEGER")$name
-  par(mfrow = c(floor(length(numeric_dim)/2),2))
-  for(i in 1 : length(numeric_dim))
-  { 
-    data =   as.array(dbGetQuery(con_bq_cr,paste0("select ",numeric_dim[i], " from risk_credit_data.",table," where ",numeric_dim[i]," is not null"))[[1]])
-    final_plot = boxplot(data , main = as.character(numeric_dim[i]) , xlab = "")
-  }
-  return(final_plot)
+   numeric_dim<-filter(column_info(table), type == "INTEGER")$name
+  if (length(numeric_dim) == 0){
+    message("There are no INTEGER dimension in table")
+   } else  
+   {
+      par(mfrow = c(ceiling(length(numeric_dim)/2),2))
+      for (i in 1 : length(numeric_dim))
+      { 
+        data =   as.array(dbGetQuery(con_bq_cr,paste0("select ",numeric_dim[1], " from risk_credit_data.",table," where ",numeric_dim[i]," is not null"))[[1]])
+        final_plot = boxplot(summary(data) , main = as.character(numeric_dim[i]) , xlab = "")
+      }
+      return(final_plot)
+   } 
 }
 #cat("Which schema you want to explore? (That function built for Bigquery DBMS)");
 #    schema <- readLines("stdin",n=1);
@@ -155,23 +142,22 @@ con_bq_cr <- dbConnect(
    bigrquery::bigquery(),
     project = "bef-cake-prod",
     dataset = "risk_credit_data",
-    billing = "bef-cake-prod")
+    billing = "bef-cake-prod")l1st
 data_dic_gen <- function()
 {
-    list_table = info_server_func()
-    for (i in 2:nrow(list_table))
+    table_list = info_server_func()
+    for (i in 1:nrow(table_list))
     {
-      message("Details of table",list_table$TABLE_NAME[i] ,"is: ")
-      final_df = mutate(column_info(list_table$TABLE_NAME[i]),
-      unique_value_func(list_table$TABLE_NAME[i]), 
-      max_date_func(list_table$TABLE_NAME[i]),
-      min_date_func(list_table$TABLE_NAME[i]),
-      missing_value_count_func(list_table$TABLE_NAME[i]),
-      primary_key_find(list_table$TABLE_NAME[i]))
+      message("Details of table",table_list$TABLE_NAME[i] ,"is: ")
+      final_df = mutate(column_info(table_list$TABLE_NAME[i]),
+      unique_value_func(table_list$TABLE_NAME[i]list_table), 
+      max_date_func(table_list$TABLE_NAME[i]),
+      min_date_func(table_list$TABLE_NAME[i]),1
+      missing_value_count_func(table_list$TABLE_NAME[i]),
+      primary_key_find(table_list$TABLE_NAME[i]))
       print(final_df)
-      data_dist_plot(list_table$TABLE_NAME[i])
-      data_box_plot(list_table$TABLE_NAME[i])
+      data_dist_plot(table_list$TABLE_NAME[i])
+      data_box_plot(table_list$TABLE_NAME[i])
   }
 }
-data_dic_gen()
-par(mfrow = c(floor(length(numeric_dim)/2), 2)) 
+
