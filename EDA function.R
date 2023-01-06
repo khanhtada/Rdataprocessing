@@ -142,7 +142,7 @@ con_bq_cr <- dbConnect(
    bigrquery::bigquery(),
     project = "bef-cake-prod",
     dataset = "risk_credit_data",
-    billing = "bef-cake-prod")l1st
+    billing = "bef-cake-prod")l1st sda a ahahhaha
 data_dic_gen <- function()
 {
     table_list = info_server_func()
